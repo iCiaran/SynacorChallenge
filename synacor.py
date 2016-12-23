@@ -2,6 +2,7 @@ from processor import Processor
 import sys
 import struct
 
+
 def main(file):
     processor = Processor()
     index = 0
@@ -15,6 +16,7 @@ def main(file):
     while True:
         processor.doOperation()
     print("\r")
+
 
 if __name__ == '__main__':
     main(sys.argv[1])
