@@ -10,7 +10,9 @@ def main(file):
     with open(file, "rb") as f:
         hword = f.read(2)
         while len(hword) != 0:
-            processor.loadProgram(index, struct.unpack("<h", hword)[0])
+            n =  struct.unpack("<H", hword)[0]
+
+            processor.loadProgram(index, n)
             index += 1
             hword = f.read(2)
     while True:
