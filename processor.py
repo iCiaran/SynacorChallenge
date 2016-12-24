@@ -10,10 +10,10 @@ class Processor:
                      4: self.eq, 2: self.push, 3: self.pop, 5: self.gt,
                      12: self.bit_and, 13: self.bit_or, 14: self.bit_not,
                      17: self.call, 18: self.ret, 10: self.mult,
-                     11: self.mod}
+                     11: self.mod, 15: self.rmem, 16: self.wmem}
         self._nArg = {0: 0, 21: 0, 19: 1, 6: 1, 7: 2, 8: 2, 1: 2, 9: 3,
                       4: 3, 2: 1, 3: 1, 5: 3, 12: 3, 13: 3, 14: 2, 17: 1,
-                      18: 0, 10: 3, 11: 3}
+                      18: 0, 10: 3, 11: 3, 15: 2, 16: 2}
         # print("-".join([str(x) for x in self._get]))
         self._main = []
         self._registers = {}
@@ -29,7 +29,7 @@ class Processor:
             print("Invalid register", reg, val)
 
     def set(self, args):
-        self.writeToRegister(args[0], args[1])
+        self.writeToRegister(args[0], self.getValue(args[1]))
         # self._registers[args[0] % self._maxMemory] = self.getValue(args[1])
         self._pc += 3
 
@@ -91,6 +91,7 @@ class Processor:
 
     def call(self, args):
         self._stack.append(self._pc + 2)
+        # print(self.getValue(args[0]), self._registers[1])
         self._pc = self.getValue(args[0])
 
     def ret(self, args):
@@ -126,6 +127,10 @@ class Processor:
         else:
             self._pc += 3
 
+    def rmem(self, args):
+        self.writeToRegister(args[0], self._main[self.getValue(args[1])])
+        self._pc += 3
+
     def wmem(self, args):
         self._main[self.getValue(args[0])] = self.getValue(args[1])
         self._pc += 3
@@ -145,11 +150,11 @@ class Processor:
 
         if op not in self._get:
             print("{}: Opcode {} not implemented yet!".format(self._pc, op))
-            self._pc += 1
             self.halt(None)
         n = self._nArg[op]
         a = [self._main[self._pc + i] for i in range(1, self._nArg[op] + 1)]
         # print(self._pc, self._get[op].__name__, n, a)
+        # print(self._registers)
         self._get[op](a)
 
     def getValue(self, a):
