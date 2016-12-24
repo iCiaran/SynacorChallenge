@@ -8,9 +8,11 @@ class Processor:
         self._get = {0: self.halt, 21: self.noop, 19: self.out, 6: self.jmp,
                      7: self.jt, 8: self.jf, 1: self.set, 9: self.add,
                      4: self.eq, 2: self.push, 3: self.pop, 5: self.gt,
-                     12: self.bit_and, 13: self.bit_or, 14: self.bit_not}
+                     12: self.bit_and, 13: self.bit_or, 14: self.bit_not,
+                     17: self.call, 18: self.ret}
         self._nArg = {0: 0, 21: 0, 19: 1, 6: 1, 7: 2, 8: 2, 1: 2, 9: 3,
-                      4: 3, 2: 1, 3: 1, 5: 3, 12: 3, 13: 3, 14: 2}
+                      4: 3, 2: 1, 3: 1, 5: 3, 12: 3, 13: 3, 14: 2, 17: 1,
+                      18: 0}
         # print("-".join([str(x) for x in self._get]))
         self._main = []
         self._registers = {}
@@ -74,6 +76,16 @@ class Processor:
         else:
             self.writeToRegister(args[0], 0)
         self._pc += 4
+
+    def call(self, args):
+        self._stack.append(self._pc + 2)
+        self._pc = self.getValue(args[0])
+
+    def ret(self, args):
+        if len(self._stack) > 0:
+            self._pc = self._stack.pop()
+        else:
+            self.halt(None)
 
     def halt(self, args):
         sys.exit(0)
