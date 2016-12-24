@@ -9,10 +9,11 @@ class Processor:
                      7: self.jt, 8: self.jf, 1: self.set, 9: self.add,
                      4: self.eq, 2: self.push, 3: self.pop, 5: self.gt,
                      12: self.bit_and, 13: self.bit_or, 14: self.bit_not,
-                     17: self.call, 18: self.ret}
+                     17: self.call, 18: self.ret, 10: self.mult,
+                     11: self.mod}
         self._nArg = {0: 0, 21: 0, 19: 1, 6: 1, 7: 2, 8: 2, 1: 2, 9: 3,
                       4: 3, 2: 1, 3: 1, 5: 3, 12: 3, 13: 3, 14: 2, 17: 1,
-                      18: 0}
+                      18: 0, 10: 3, 11: 3}
         # print("-".join([str(x) for x in self._get]))
         self._main = []
         self._registers = {}
@@ -68,6 +69,17 @@ class Processor:
         self.writeToRegister(args[0], (self.getValue(args[1]) +
                                        self.getValue(args[2])) %
                              self._maxMemory)
+        self._pc += 4
+
+    def mult(self, args):
+        self.writeToRegister(args[0], (self.getValue(args[1]) *
+                                       self.getValue(args[2])) %
+                             self._maxMemory)
+        self._pc += 4
+
+    def mod(self, args):
+        self.writeToRegister(args[0], self.getValue(args[1]) %
+                             self.getValue(args[2]))
         self._pc += 4
 
     def eq(self, args):
