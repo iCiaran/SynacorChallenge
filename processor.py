@@ -26,118 +26,140 @@ class Processor:
 
     def writeToRegister(self, reg, val):
         if 32768 <= reg <= 32775:
-            self._registers[reg % self._maxMemory] = val
+            self._registers[reg - self._maxMemory] = val
         else:
             print("Invalid register", reg, val)
 
-    def readIn(self, args):
-        if len(self._inputString) == 0:
-            self._inputString = list(input() + "\n")
-        self.writeToRegister(args[0], ord(self._inputString.pop(0)))
-        self._pc += 2
+    def halt(self, args):
+        """ halt: 0"""
+        sys.exit(0)
 
     def set(self, args):
+        """ set: 1 a b"""
         self.writeToRegister(args[0], self.getValue(args[1]))
         self._pc += 3
 
-    def bit_and(self, args):
-        self.writeToRegister(args[0], self.getValue(args[1]) &
-                             self.getValue(args[2]))
-        self._pc += 4
-
-    def bit_or(self, args):
-        self.writeToRegister(args[0], self.getValue(args[1]) |
-                             self.getValue(args[2]))
-        self._pc += 4
-
-    def bit_not(self, args):
-        self.writeToRegister(args[0], ~self.getValue(args[1]) & 0x7FFF)
-        self._pc += 3
-
-    def gt(self, args):
-        if self.getValue(args[1]) > self.getValue(args[2]):
-            self.writeToRegister(args[0], 1)
-        else:
-            self.writeToRegister(args[0], 0)
-        self._pc += 4
-
     def push(self, args):
+        """ push: 2 a"""
         self._stack.append(self.getValue(args[0]))
         self._pc += 2
 
     def pop(self, args):
+        """ pop: 3 a"""
         if len(self._stack) > 0:
             self.writeToRegister(args[0], self._stack.pop())
         else:
             self.halt(None)
         self._pc += 2
 
-    def add(self, args):
-        self.writeToRegister(args[0], (self.getValue(args[1]) +
-                                       self.getValue(args[2])) %
-                             self._maxMemory)
-        self._pc += 4
-
-    def mult(self, args):
-        self.writeToRegister(args[0], (self.getValue(args[1]) *
-                                       self.getValue(args[2])) %
-                             self._maxMemory)
-        self._pc += 4
-
-    def mod(self, args):
-        self.writeToRegister(args[0], self.getValue(args[1]) %
-                             self.getValue(args[2]))
-        self._pc += 4
-
     def eq(self, args):
+        """ eq: 4 a b c"""
         if self.getValue(args[1]) == self.getValue(args[2]):
             self.writeToRegister(args[0], 1)
         else:
             self.writeToRegister(args[0], 0)
         self._pc += 4
 
-    def call(self, args):
-        self._stack.append(self._pc + 2)
-        self._pc = self.getValue(args[0])
-
-    def ret(self, args):
-        if len(self._stack) > 0:
-            self._pc = self._stack.pop()
+    def gt(self, args):
+        """ gt: 5 a b c"""
+        if self.getValue(args[1]) > self.getValue(args[2]):
+            self.writeToRegister(args[0], 1)
         else:
-            self.halt(None)
-
-    def halt(self, args):
-        sys.exit(0)
-
-    def noop(self, args):
-        self._pc += 1
-
-    def out(self, args):
-        print(chr(self.getValue(args[0])), end="")
-        self._pc += 2
+            self.writeToRegister(args[0], 0)
+        self._pc += 4
 
     def jmp(self, args):
+        """ jmp: 6 a"""
         self._pc = self.getValue(args[0])
 
     def jt(self, args):
+        """ jt: 7 a b"""
         if self.getValue(args[0]) != 0:
             self._pc = self.getValue(args[1])
         else:
             self._pc += 3
 
     def jf(self, args):
+        """ jf: 8 a b"""
         if self.getValue(args[0]) == 0:
             self._pc = self.getValue(args[1])
         else:
             self._pc += 3
 
+    def add(self, args):
+        """ add: 9 a b c"""
+        self.writeToRegister(args[0], (self.getValue(args[1]) +
+                                       self.getValue(args[2])) %
+                             self._maxMemory)
+        self._pc += 4
+
+    def mult(self, args):
+        """ mult: 10 a b c"""
+        self.writeToRegister(args[0], (self.getValue(args[1]) *
+                                       self.getValue(args[2])) %
+                             self._maxMemory)
+        self._pc += 4
+
+    def mod(self, args):
+        """ mod: 11 a b c"""
+        self.writeToRegister(args[0], self.getValue(args[1]) %
+                             self.getValue(args[2]))
+        self._pc += 4
+
+    def bit_and(self, args):
+        """ and: 12 a b c"""
+        self.writeToRegister(args[0], self.getValue(args[1]) &
+                             self.getValue(args[2]))
+        self._pc += 4
+
+    def bit_or(self, args):
+        """ or: 13 a b c"""
+        self.writeToRegister(args[0], self.getValue(args[1]) |
+                             self.getValue(args[2]))
+        self._pc += 4
+
+    def bit_not(self, args):
+        """ not: 14 a b"""
+        self.writeToRegister(args[0], ~self.getValue(args[1]) & 0x7FFF)
+        self._pc += 3
+
     def rmem(self, args):
+        """ rmem: 15 a b"""
         self.writeToRegister(args[0], self._main[self.getValue(args[1])])
         self._pc += 3
 
     def wmem(self, args):
+        """ wmem: 16 a b"""
         self._main[self.getValue(args[0])] = self.getValue(args[1])
         self._pc += 3
+
+    def call(self, args):
+        """ call: 17 a"""
+        self._stack.append(self._pc + 2)
+        self._pc = self.getValue(args[0])
+
+    def ret(self, args):
+        """ ret: 18"""
+        if len(self._stack) > 0:
+            self._pc = self._stack.pop()
+        else:
+            self.halt(None)
+
+    def out(self, args):
+        """ out: 19 a"""
+        print(chr(self.getValue(args[0])), end="")
+        self._pc += 2
+
+    def readIn(self, args):
+        """ in: 20 a"""
+        if len(self._inputString) == 0:
+            self._inputString = list(input() + "\n")
+        self.writeToRegister(args[0], ord(self._inputString.pop(0)))
+        self._pc += 2
+
+    def noop(self, args):
+        """ noop: 21"""
+        self._pc += 1
 
     def loadProgram(self, i, hword):
         self._main[self.getValue(i)] = hword
