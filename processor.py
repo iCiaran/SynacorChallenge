@@ -7,11 +7,12 @@ class Processor:
         self._maxMemory = 2**15
         self._get = {0: self.halt, 21: self.noop, 19: self.out, 6: self.jmp,
                      7: self.jt, 8: self.jf, 1: self.set, 9: self.add,
-                     4: self.eq}
+                     4: self.eq, 2: self.push, 3: self.pop}
         self._nArg = {0: 0, 21: 0, 19: 1, 6: 1, 7: 2, 8: 2, 1: 2, 9: 3,
-                      4: 3}
+                      4: 3, 2: 1, 3: 1}
         self._main = []
         self._registers = {}
+        self._stack = []
         self._pc = 0
         self.initRegisters()
         self.initMemory()
@@ -26,6 +27,15 @@ class Processor:
         self.writeToRegister(args[0], args[1])
         # self._registers[args[0] % self._maxMemory] = self.getValue(args[1])
         self._pc += 3
+
+    def push(self, args):
+        self._stack.append(self.getValue(args[0]))
+        self._pc += 2
+
+    def pop(self, args):
+        if len(self._stack) > 0:
+            self.writeToRegister(args[0], self._stack.pop())
+        self._pc += 2
 
     def add(self, args):
         self.writeToRegister(args[0], (self.getValue(args[1]) +
