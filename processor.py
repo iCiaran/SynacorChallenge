@@ -3,7 +3,7 @@ import sys
 
 class Processor:
 
-    def __init__(self):
+    def __init__(self, pc=0):
         self._maxMemory = 2**15
         self._get = {0: self.halt, 21: self.noop, 19: self.out, 6: self.jmp,
                      7: self.jt, 8: self.jf, 1: self.set, 9: self.add,
@@ -19,7 +19,7 @@ class Processor:
         self._main = []
         self._registers = {}
         self._stack = []
-        self._pc = 0
+        self._pc = pc
         self._inputString = []
         self.initRegisters()
         self.initMemory()
