@@ -1,0 +1,18 @@
+
+maze:
+
+west
+south
+north
+
+blue coin: 9 dots
+red coin: 2 dots
+corroded coin: 1 triangle
+concave coin: 7 dots
+shiny coin: 1 pentagon
+
+blue
+red
+shiny
+concave
+corroded
