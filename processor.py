@@ -15,6 +15,7 @@ class Processor:
         self._nArg = {0: 0, 21: 0, 19: 1, 6: 1, 7: 2, 8: 2, 1: 2, 9: 3,
                       4: 3, 2: 1, 3: 1, 5: 3, 12: 3, 13: 3, 14: 2, 17: 1,
                       18: 0, 10: 3, 11: 3, 15: 2, 16: 2, 20: 1}
+        self._debug = {"readReg": self.dReadReg, "setReg": self.dSetReg}
 
         self._main = []
         self._registers = {}
@@ -23,6 +24,14 @@ class Processor:
         self._inputString = []
         self.initRegisters()
         self.initMemory()
+
+    def dReadReg(self, args):
+        print(self._registers)
+
+    def dSetReg(self, args):
+        reg, val = int(args[0]), int(args[1])
+        print("Writing {} to reg {}".format(reg % self._maxMemory, val))
+        self.writeToRegister(reg, val)
 
     def writeToRegister(self, reg, val):
         if 32768 <= reg <= 32775:
@@ -154,6 +163,11 @@ class Processor:
         """ in: 20 a"""
         if len(self._inputString) == 0:
             self._inputString = list(input() + "\n")
+        if "".join(self._inputString).strip().split(" ")[0] in self._debug:
+            command = "".join(self._inputString).strip().split(" ")
+            self._debug[command[0]](command[1:])
+            self._inputString = []
+            return self.readIn(args)
         self.writeToRegister(args[0], ord(self._inputString.pop(0)))
         self._pc += 2
 
